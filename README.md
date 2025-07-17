@@ -42,6 +42,35 @@ llm-reasoning-evaluation/
 - **Constraint Validation**: Proper predator-prey relationship enforcement
 - **Optimal Pathfinding**: BFS ensures shortest solution paths
 
+## 🚀 Quick Start (First Time Users)
+
+**Step 1: Install dependencies**
+```bash
+pip3 install -r requirements.txt
+```
+
+**Step 2: Test that everything works (no API key needed)**
+```bash
+python3 experiments/evaluate.py --mock --puzzles hanoi --count 3 --mode both
+```
+You should see: `✓ 7 moves, 271 tokens` and `Results saved to: results/...`
+
+**Step 3: Run with a real model (needs OpenAI API key)**
+```bash
+export OPENAI_API_KEY="your-key-here"
+python3 experiments/evaluate.py --model gpt-3.5-turbo --puzzles hanoi --count 5 --mode both
+```
+
+**Step 4: Check your results**
+```bash
+ls results/
+python3 experiments/compare.py --directory results/
+```
+
+**That's it!** You now have evaluation results comparing verbose vs compact prompting approaches.
+
+---
+
 ## Installation
 
 This project requires Python 3.7+ with only standard library dependencies.
