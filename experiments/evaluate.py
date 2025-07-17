@@ -63,9 +63,11 @@ class EvaluationHarness:
         """
         self.model = model
         self.llm_client = create_llm_client(model, api_key, mock)
+        print(f">>> LLM client type: {type(self.llm_client).__name__}, mock={mock}")
         self.code_executor = CodeExecutor(timeout_seconds=timeout)
         self.metrics_collector = MetricsCollector()
-        
+
+
         # Generators
         self.hanoi_generator = HanoiGenerator()
         self.river_generator = RiverCrossingGenerator()
