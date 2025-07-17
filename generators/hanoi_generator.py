@@ -10,7 +10,7 @@ import json
 import random
 import argparse
 from typing import Dict, List, Any, Optional
-from hanoi_solver import HanoiSolver
+from solvers.hanoi_solver import HanoiSolver
 
 
 class HanoiGenerator:
@@ -157,7 +157,8 @@ class HanoiGenerator:
         try:
             moves = self.solver.solve(puzzle['initial_state'], puzzle['goal_state'])
             return len(moves) > 0 or self._states_equal(puzzle['initial_state'], puzzle['goal_state'])
-        except Exception:
+        except (ValueError, KeyError) as e:
+            # These are expected errors for unsolvable puzzles
             return False
     
     def _states_equal(self, state1: Dict[str, Any], state2: Dict[str, Any]) -> bool:
@@ -214,8 +215,9 @@ class HanoiGenerator:
                     puzzle['metadata']['puzzle_id'] = len(puzzles) + 1
                     puzzles.append(puzzle)
             
-            except Exception:
-                continue  # Skip invalid puzzles
+            except (ValueError, KeyError, TypeError) as e:
+                # Skip puzzles that can't be generated or verified
+                continue
         
         return puzzles
 
@@ -259,8 +261,10 @@ def main():
             )
             result = json.dumps(puzzles, indent=2)
     
-    except Exception as e:
-        result = json.dumps({"error": str(e)}, indent=2)
+    except ValueError as e:
+        result = json.dumps({"error": f"Puzzle generation error: {e}"}, indent=2)
+    except (IOError, OSError) as e:
+        result = json.dumps({"error": f"File operation error: {e}"}, indent=2)
     
     # Write output
     if args.output:

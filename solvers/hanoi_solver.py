@@ -16,7 +16,7 @@ class HanoiSolver:
     """Solver for Tower of Hanoi puzzles."""
     
     def __init__(self):
-        self.moves = []
+        pass
     
     def solve(self, initial_state: Dict[str, Any], goal_state: Dict[str, Any]) -> List[Tuple[str, str]]:
         """
@@ -44,17 +44,17 @@ class HanoiSolver:
         # Use BFS for complex cases
         return self._solve_with_bfs(initial_state, goal_state)
     
-    def _hanoi_recursive(self, n: int, source: str, dest: str, aux: str):
+    def _hanoi_recursive(self, n: int, source: str, dest: str, aux: str, moves: List[Tuple[str, str]]):
         """Recursive Tower of Hanoi algorithm."""
         if n == 1:
-            self.moves.append((source, dest))
+            moves.append((source, dest))
         else:
             # Move n-1 disks from source to auxiliary
-            self._hanoi_recursive(n-1, source, aux, dest)
+            self._hanoi_recursive(n-1, source, aux, dest, moves)
             # Move the largest disk from source to destination
-            self.moves.append((source, dest))
+            moves.append((source, dest))
             # Move n-1 disks from auxiliary to destination
-            self._hanoi_recursive(n-1, aux, dest, source)
+            self._hanoi_recursive(n-1, aux, dest, source, moves)
     
     def _validate_state(self, state: Dict[str, Any]) -> bool:
         """Validate that a state is properly formatted."""
@@ -99,7 +99,7 @@ class HanoiSolver:
     
     def _solve_simple_case(self, initial_state: Dict[str, Any], goal_state: Dict[str, Any]) -> List[Tuple[str, str]]:
         """Solve simple case using recursive algorithm."""
-        self.moves = []
+        moves = []
         
         # Find source and destination pegs
         source_peg = None
@@ -123,9 +123,9 @@ class HanoiSolver:
         aux_peg = [p for p in all_pegs if p not in [source_peg, dest_peg]][0]
         
         # Solve recursively
-        self._hanoi_recursive(initial_state['num_disks'], source_peg, dest_peg, aux_peg)
+        self._hanoi_recursive(initial_state['num_disks'], source_peg, dest_peg, aux_peg, moves)
         
-        return self.moves
+        return moves
     
     def _solve_with_bfs(self, initial_state: Dict[str, Any], goal_state: Dict[str, Any]) -> List[Tuple[str, str]]:
         """Solve complex cases using BFS."""
@@ -224,7 +224,11 @@ def solve_from_json(puzzle_json: str) -> str:
         solver = HanoiSolver()
         moves = solver.solve(puzzle['initial_state'], puzzle['goal_state'])
         return solver.format_solution(moves)
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        return f"Error parsing JSON: {e}"
+    except (KeyError, TypeError) as e:
+        return f"Error in puzzle format: {e}"
+    except ValueError as e:
         return f"Error solving puzzle: {e}"
 
 
@@ -260,8 +264,14 @@ def main():
         else:
             result = solver.format_solution(moves)
     
-    except Exception as e:
-        result = f"Error: {e}"
+    except json.JSONDecodeError as e:
+        result = f"Error parsing JSON: {e}"
+    except (KeyError, TypeError) as e:
+        result = f"Error in puzzle format: {e}"
+    except ValueError as e:
+        result = f"Error solving puzzle: {e}"
+    except (IOError, OSError) as e:
+        result = f"Error reading/writing files: {e}"
     
     # Write output
     if args.output:

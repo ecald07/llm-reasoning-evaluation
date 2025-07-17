@@ -184,7 +184,11 @@ def solve_from_json(puzzle_json: str) -> str:
         solver = RiverCrossingSolver()
         moves = solver.solve(puzzle['initial_state'], puzzle['goal_state'])
         return solver.format_solution(moves)
-    except Exception as e:
+    except json.JSONDecodeError as e:
+        return f"Error parsing JSON: {e}"
+    except (KeyError, TypeError) as e:
+        return f"Error in puzzle format: {e}"
+    except ValueError as e:
         return f"Error solving puzzle: {e}"
 
 
@@ -246,8 +250,14 @@ def main():
                         current_state[entity] = direction
                     result += f"\nAfter move {i}: {solver.get_state_description(current_state)}"
     
-    except Exception as e:
-        result = f"Error: {e}"
+    except json.JSONDecodeError as e:
+        result = f"Error parsing JSON: {e}"
+    except (KeyError, TypeError) as e:
+        result = f"Error in puzzle format: {e}"
+    except ValueError as e:
+        result = f"Error solving puzzle: {e}"
+    except (IOError, OSError) as e:
+        result = f"Error reading/writing files: {e}"
     
     # Write output
     if args.output:

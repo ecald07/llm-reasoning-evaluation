@@ -10,7 +10,7 @@ import json
 import random
 import argparse
 from typing import Dict, List, Any, Optional
-from river_solver import RiverCrossingSolver
+from solvers.river_solver import RiverCrossingSolver
 
 
 class RiverCrossingGenerator:
@@ -30,6 +30,74 @@ class RiverCrossingGenerator:
             ['farmer', 'cat', 'mouse', 'cheese'],
             ['farmer', 'snake', 'bird', 'seeds']
         ]
+    
+    def _is_valid_initial_state(self, state: Dict[str, str]) -> bool:
+        """
+        Check if an initial state is valid (no forbidden combinations without farmer).
+        
+        Args:
+            state: Dictionary with entity positions
+            
+        Returns:
+            True if state is valid, False if predator/prey are alone without farmer
+        """
+        if len(state) < 4:
+            return True  # Not enough entities for standard constraints
+        
+        entities = list(state.keys())
+        controller = entities[0]  # Assume first entity is the farmer
+        
+        if len(entities) >= 4:
+            entity1 = entities[1]  # predator (wolf/cat/etc)
+            entity2 = entities[2]  # prey/middle (goat/mouse/etc)
+            entity3 = entities[3]  # food (cabbage/cheese/etc)
+            
+            controller_side = state[controller]
+            
+            # Check each side of the river
+            for side in ['left', 'right']:
+                entities_on_side = [entity for entity in [entity1, entity2, entity3] 
+                                  if state[entity] == side]
+                
+                # If controller is on this side, any combination is safe
+                if controller_side == side:
+                    continue
+                
+                # If controller is NOT on this side, check for forbidden combinations
+                if entity1 in entities_on_side and entity2 in entities_on_side:
+                    return False  # Predator would eat prey
+                if entity2 in entities_on_side and entity3 in entities_on_side:
+                    return False  # Prey would eat food
+        
+        return True
+    
+    def is_valid_start(self, state: Dict[str, str], entities: List[str]) -> bool:
+        """
+        Check if a start state is valid (no predator-prey pair alone without farmer).
+        
+        Args:
+            state: The state to validate
+            entities: List of entities in order [farmer, predator, prey, food]
+        
+        Returns:
+            True if valid, False if invalid
+        """
+        if len(entities) < 4:
+            return True  # Not enough entities for standard constraints
+        
+        farmer, predator, prey, food = entities[:4]
+        
+        # Check if predator and prey are alone without farmer
+        if (state.get(predator) == state.get(prey) and 
+            state.get(farmer) != state.get(predator)):
+            return False
+        
+        # Check if prey and food are alone without farmer
+        if (state.get(prey) == state.get(food) and 
+            state.get(farmer) != state.get(prey)):
+            return False
+        
+        return True
     
     def generate_puzzle(self, variant: str = 'classic') -> Dict[str, Any]:
         """
@@ -79,9 +147,19 @@ class RiverCrossingGenerator:
         initial_state = {}
         goal_state = {}
         
-        # Randomly assign initial positions
-        for entity in entities:
-            initial_state[entity] = random.choice(['left', 'right'])
+        # Randomly assign initial positions, ensuring validity
+        max_attempts = 50
+        for attempt in range(max_attempts):
+            initial_state = {}
+            for entity in entities:
+                initial_state[entity] = random.choice(['left', 'right'])
+            
+            # Check if this starting state is valid
+            if self.is_valid_start(initial_state, entities):
+                break
+        else:
+            # Fallback to classic start if we can't generate a valid random start
+            initial_state = {entity: 'left' for entity in entities}
         
         # Goal is usually the opposite side for most entities
         for entity in entities:
@@ -112,18 +190,31 @@ class RiverCrossingGenerator:
         initial_state = {}
         goal_state = {}
         
-        # Start with farmer on left (standard)
-        initial_state['farmer'] = 'left'
-        
-        # Randomly distribute other entities
-        other_entities = [e for e in entities if e != 'farmer']
-        for entity in other_entities:
-            initial_state[entity] = random.choice(['left', 'right'])
+        # Generate valid partial crossing state
+        max_attempts = 50
+        for attempt in range(max_attempts):
+            initial_state = {}
+            
+            # Start with farmer on left (standard)
+            initial_state['farmer'] = 'left'
+            
+            # Randomly distribute other entities
+            other_entities = [e for e in entities if e != 'farmer']
+            for entity in other_entities:
+                initial_state[entity] = random.choice(['left', 'right'])
+            
+            # Check if this starting state is valid
+            if self.is_valid_start(initial_state, entities):
+                break
+        else:
+            # Fallback to classic start if we can't generate a valid partial start
+            initial_state = {entity: 'left' for entity in entities}
         
         # Goal: get specific entities to specific sides
         # Ensure at least one entity needs to move
         goal_state['farmer'] = random.choice(['left', 'right'])
         
+        other_entities = [e for e in entities if e != 'farmer']
         for entity in other_entities:
             # 70% chance to be on opposite side from start
             if random.random() < 0.7:
@@ -144,12 +235,24 @@ class RiverCrossingGenerator:
     
     def _generate_custom_puzzle(self, entities: List[str]) -> Dict[str, Any]:
         """Generate puzzle with custom entity names but same constraint structure."""
-        # Generate random positions
+        # Generate random positions, ensuring validity
         initial_state = {}
         goal_state = {}
         
+        max_attempts = 50
+        for attempt in range(max_attempts):
+            initial_state = {}
+            for entity in entities:
+                initial_state[entity] = random.choice(['left', 'right'])
+            
+            # Check if this starting state is valid
+            if self.is_valid_start(initial_state, entities):
+                break
+        else:
+            # Fallback to classic start if we can't generate a valid custom start
+            initial_state = {entity: 'left' for entity in entities}
+        
         for entity in entities:
-            initial_state[entity] = random.choice(['left', 'right'])
             goal_state[entity] = random.choice(['left', 'right'])
         
         # Ensure puzzle is not trivial (at least farmer needs to move)
@@ -184,7 +287,8 @@ class RiverCrossingGenerator:
             
             moves = solver.solve(puzzle['initial_state'], puzzle['goal_state'])
             return True
-        except Exception:
+        except (ValueError, KeyError) as e:
+            # These are expected errors for unsolvable puzzles
             return False
     
     def generate_batch(self, count: int, variants: Optional[List[str]] = None) -> List[Dict[str, Any]]:
@@ -216,8 +320,9 @@ class RiverCrossingGenerator:
                     puzzle['metadata']['puzzle_id'] = len(puzzles) + 1
                     puzzles.append(puzzle)
             
-            except Exception:
-                continue  # Skip invalid puzzles
+            except (ValueError, KeyError, TypeError) as e:
+                # Skip puzzles that can't be generated or verified
+                continue
         
         return puzzles
     
@@ -290,8 +395,10 @@ def main():
             
             result = json.dumps(puzzle, indent=2)
     
-    except Exception as e:
-        result = json.dumps({"error": str(e)}, indent=2)
+    except ValueError as e:
+        result = json.dumps({"error": f"Puzzle generation error: {e}"}, indent=2)
+    except (IOError, OSError) as e:
+        result = json.dumps({"error": f"File operation error: {e}"}, indent=2)
     
     # Write output
     if args.output:

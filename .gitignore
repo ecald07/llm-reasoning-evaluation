@@ -176,3 +176,6 @@ temp_*.py
 # Puzzle output files (unless specifically needed)
 puzzles/
 output/ 
+
+.cursor/*
+docs/papers/*

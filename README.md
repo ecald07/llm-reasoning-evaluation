@@ -10,11 +10,22 @@ Inspired by Apple's "Illusion of Thinking" paper and Alex Lawsen's "The Illusion
 
 ```
 llm-reasoning-evaluation/
-├── hanoi_generator.py    # Generate Tower of Hanoi puzzles
-├── hanoi_solver.py       # Solve Tower of Hanoi puzzles
-├── river_generator.py    # Generate River Crossing puzzles
-├── river_solver.py       # Solve River Crossing puzzles
-└── README.md            # This file
+├── hanoi_generator.py      # Generate Tower of Hanoi puzzles
+├── hanoi_solver.py         # Solve Tower of Hanoi puzzles
+├── river_generator.py      # Generate River Crossing puzzles
+├── river_solver.py         # Solve River Crossing puzzles
+├── evaluators/             # LLM evaluation framework
+│   ├── llm_client.py       # GPT-3.5-turbo API integration
+│   ├── prompts.py          # Verbose vs compact prompt templates
+│   ├── executor.py         # Safe code execution sandbox
+│   └── metrics.py          # Token counting and accuracy measurement
+├── experiments/            # Evaluation pipeline scripts
+│   ├── evaluate.py         # Main evaluation harness
+│   ├── compare.py          # Results comparison and analysis
+│   └── config.json         # Example configuration
+├── results/                # Evaluation results (auto-generated)
+├── tests/                  # Comprehensive test suite
+└── README.md              # This file
 ```
 
 ## Features
@@ -194,6 +205,140 @@ cat test_river.json | python3 river_solver.py --format json > solutions_river.js
 - **Time**: Sub-second for puzzles up to 6 disks / 4 entities
 - **Scalability**: Tested up to 8 disks, 5 pegs; 5+ entity river crossings
 
+## LLM Evaluation Framework
+
+### Quick Start
+
+**Basic evaluation with mock client (for testing):**
+```bash
+# Test verbose mode with 3 Tower of Hanoi puzzles
+python3 experiments/evaluate.py --mock --puzzles hanoi --count 3 --mode verbose
+
+# Test compact mode with 3 River Crossing puzzles  
+python3 experiments/evaluate.py --mock --puzzles river --count 3 --mode compact
+
+# Compare both modes
+python3 experiments/evaluate.py --mock --puzzles hanoi --count 5 --mode both
+```
+
+**Real evaluation with GPT-3.5-turbo:**
+```bash
+# Set your OpenAI API key
+export OPENAI_API_KEY="your-api-key-here"
+
+# Run full evaluation comparing verbose vs compact modes
+python3 experiments/evaluate.py --model gpt-3.5-turbo --puzzles hanoi --count 10 --mode both
+
+# Use configuration file for complex experiments
+python3 experiments/evaluate.py --config experiments/config.json
+```
+
+### Key Features
+
+**🎯 Solves the "Impossible Puzzle Problem"**
+- Only generates verified solvable puzzles
+- River crossing avoids N≥6 boat capacity issues from Shojaee et al.
+- Built-in solvability verification before evaluation
+
+**🔄 Compact vs Verbose Evaluation**
+- **Verbose Mode**: Traditional step-by-step move enumeration
+- **Compact Mode**: Function-based solutions to avoid token limits
+- Direct comparison of accuracy and efficiency
+
+**🔒 Safe Code Execution**
+- Sandboxed execution environment for LLM-generated code
+- Timeout protection and input validation
+- Prevents dangerous operations while allowing puzzle solving
+
+**📊 Comprehensive Metrics**
+- Token usage tracking (prompt + completion)
+- Solution correctness verification
+- Move efficiency analysis
+- Statistical comparisons across modes
+
+### Evaluation Pipeline
+
+The evaluation harness coordinates these steps:
+
+1. **Generate Puzzles**: Create verified solvable instances
+2. **Create Prompts**: Format for verbose or compact mode
+3. **Query LLM**: Call GPT-3.5-turbo with appropriate prompts
+4. **Execute Solutions**: Run generated code safely or parse moves
+5. **Verify Correctness**: Check if solution reaches goal state
+6. **Collect Metrics**: Record tokens, timing, and accuracy
+7. **Generate Reports**: Compare modes and analyze results
+
+### Example Results
+
+```
+=== EVALUATION SUMMARY ===
+
+VERBOSE MODE:
+  Success Rate: 85.0%
+  Correctness Rate: 78.0%
+  Avg Tokens: 342
+  Avg Time: 2.1s
+
+COMPACT MODE:
+  Success Rate: 90.0%
+  Correctness Rate: 82.0%
+  Avg Tokens: 156
+  Avg Time: 1.8s
+
+COMPACT vs VERBOSE:
+  Token Savings: 54.4%
+  Time Savings: 14.3%
+  Accuracy Change: +4.0%
+```
+
+### Configuration
+
+Use `experiments/config.json` for complex experiments:
+
+```json
+{
+  "model": "gpt-3.5-turbo",
+  "puzzles": "hanoi",
+  "count": 20,
+  "mode": "both",
+  "min_difficulty": 3,
+  "max_difficulty": 6,
+  "seed": 42,
+  "timeout": 30.0
+}
+```
+
+### Results Analysis
+
+Compare evaluation runs:
+
+```bash
+# Compare two result files
+python3 experiments/compare.py results/eval1.json results/eval2.json
+
+# Aggregate metrics across multiple runs
+python3 experiments/compare.py --directory results/ --model gpt-3.5-turbo --aggregate
+
+# Filter by puzzle type
+python3 experiments/compare.py --directory results/ --puzzle-type hanoi
+```
+
+### Research Applications
+
+This framework enables systematic study of:
+
+- **Token Efficiency**: How much can compact representations save?
+- **Reasoning vs Execution**: Do models understand algorithms or just pattern match?
+- **Scaling Behavior**: How does performance change with puzzle complexity?
+- **Model Comparison**: Which models excel at different reasoning tasks?
+
+### Supported Models
+
+- **GPT-3.5-turbo** (tested)
+- **GPT-4** (compatible API)
+- Any OpenAI-compatible API endpoint
+- Mock client for testing and development
+
 ## Contributing
 
 This is a research testbed. Contributions welcome for:
@@ -201,7 +346,8 @@ This is a research testbed. Contributions welcome for:
 - Performance optimizations  
 - New constraint types
 - Evaluation metrics
-- LLM integration examples
+- Additional LLM model integrations
+- Advanced analysis tools
 
 ## License
 
@@ -212,6 +358,6 @@ Open source for research and educational use.
 If you use this testbed in research, please cite:
 ```
 LLM Reasoning Evaluation Testbed
-Tower of Hanoi and River Crossing Puzzles
+Tower of Hanoi and River Crossing Puzzles with Compact vs Verbose Evaluation
 GitHub: [repository-url]
 ``` 
