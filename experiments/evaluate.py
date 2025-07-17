@@ -23,6 +23,7 @@ import sys
 import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+from dataclasses import asdict
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -315,6 +316,21 @@ class EvaluationHarness:
             os.makedirs("results", exist_ok=True)
             
             with open(filename, 'w') as f:
+                # Convert any dataclass objects to dicts for JSON serialization
+                serializable_results = {}
+                for mode, mode_results in results.items():
+                    serializable_results[mode] = []
+                    for result in mode_results:
+                        # result is a dict with 'result' key containing EvaluationResult dataclass
+                        if isinstance(result, dict) and 'result' in result:
+                            result_dict = result.copy()
+                            if hasattr(result_dict['result'], '__dataclass_fields__'):
+                                result_dict['result'] = asdict(result_dict['result'])
+                            serializable_results[mode].append(result_dict)
+                        else:
+                            # This shouldn't happen but handle it gracefully
+                            serializable_results[mode].append(result)
+                
                 json.dump({
                     'config': {
                         'model': self.model,
@@ -325,7 +341,7 @@ class EvaluationHarness:
                         'seed': seed
                     },
                     'puzzles': puzzles,
-                    'results': results,
+                    'results': serializable_results,
                     'summary': summary
                 }, f, indent=2)
             
@@ -356,7 +372,8 @@ class EvaluationHarness:
                 filter_model=self.model,
                 filter_puzzle_type=puzzle_type
             )
-            summary['detailed_metrics'][mode] = metrics
+            # Convert AggregatedMetrics dataclass to dict
+            summary['detailed_metrics'][mode] = asdict(metrics) if hasattr(metrics, '__dataclass_fields__') else metrics
             summary['overall_metrics'][mode] = {
                 'success_rate': metrics.success_rate,
                 'correctness_rate': metrics.correctness_rate,
@@ -367,7 +384,13 @@ class EvaluationHarness:
         # Compare modes if both verbose and compact were tested
         if 'verbose' in results and 'compact' in results:
             comparison = self.metrics_collector.compare_modes(self.model, puzzle_type)
-            summary['mode_comparison'] = comparison
+            # Ensure comparison is JSON serializable
+            if isinstance(comparison, dict):
+                summary['mode_comparison'] = comparison
+            elif hasattr(comparison, '__dataclass_fields__'):
+                summary['mode_comparison'] = asdict(comparison)
+            else:
+                summary['mode_comparison'] = comparison
         
         return summary
     
