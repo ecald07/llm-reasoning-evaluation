@@ -4,7 +4,7 @@ A fair-play testbed for evaluating how well small-to-mid-size language models pe
 
 ## Overview
 
-Inspired by Apple's "Illusion of Thinking" paper (June 2025) and Anthropic's rebuttal, this testbed provides a systematic way to evaluate whether language models can truly "reason" or are simply pattern matching on training data.
+Inspired by Apple's "Illusion of Thinking" paper and Alex Lawsen's "The Illusion of the Illusion of Thinking: A Comment on Shojaee et al. (2025)" from Open Philanthropy, this testbed provides a systematic way to evaluate whether language models can truly "reason" or are simply pattern matching on training data.
 
 ## Project Structure
 
