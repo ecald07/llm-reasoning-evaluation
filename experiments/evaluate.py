@@ -29,6 +29,8 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+print("ENV OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+
 # Add parent directories to path for imports
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
