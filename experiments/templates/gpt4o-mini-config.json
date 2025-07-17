@@ -1,0 +1,12 @@
+{
+  "model": "gpt-4o-mini-2024-07-18",
+  "puzzles": "hanoi",
+  "count": 10,
+  "mode": "both",
+  "min_difficulty": 3,
+  "max_difficulty": 6,
+  "seed": 42,
+  "timeout": 30.0,
+  "mock": false,
+  "no_save": false
+} 

@@ -1,0 +1,255 @@
+{
+  "config": {
+    "model": "gpt-3.5-turbo",
+    "puzzle_type": "hanoi",
+    "count": 5,
+    "modes": [
+      "verbose",
+      "compact"
+    ],
+    "difficulty_range": [
+      3,
+      5
+    ],
+    "seed": 42
+  },
+  "puzzles": [
+    {
+      "initial_state": {
+        "pegs": {
+          "peg_0": [
+            5,
+            2
+          ],
+          "peg_1": [
+            3
+          ],
+          "peg_2": [
+            4,
+            1
+          ]
+        },
+        "num_disks": 5
+      },
+      "goal_state": {
+        "pegs": {
+          "peg_0": [
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_1": [],
+          "peg_2": []
+        },
+        "num_disks": 5
+      },
+      "metadata": {
+        "num_disks": 5,
+        "num_pegs": 3,
+        "puzzle_type": "complex",
+        "end_peg": "peg_0",
+        "difficulty": "hard",
+        "puzzle_id": 1
+      }
+    },
+    {
+      "initial_state": {
+        "pegs": {
+          "peg_0": [
+            1
+          ],
+          "peg_1": [
+            3
+          ],
+          "peg_2": [
+            2
+          ]
+        },
+        "num_disks": 3
+      },
+      "goal_state": {
+        "pegs": {
+          "peg_0": [
+            3,
+            2,
+            1
+          ],
+          "peg_1": [],
+          "peg_2": []
+        },
+        "num_disks": 3
+      },
+      "metadata": {
+        "num_disks": 3,
+        "num_pegs": 3,
+        "puzzle_type": "complex",
+        "end_peg": "peg_0",
+        "difficulty": "medium",
+        "puzzle_id": 2
+      }
+    },
+    {
+      "initial_state": {
+        "pegs": {
+          "peg_0": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_1": [],
+          "peg_2": [],
+          "peg_3": []
+        },
+        "num_disks": 4
+      },
+      "goal_state": {
+        "pegs": {
+          "peg_0": [],
+          "peg_1": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_2": [],
+          "peg_3": []
+        },
+        "num_disks": 4
+      },
+      "metadata": {
+        "num_disks": 4,
+        "num_pegs": 4,
+        "start_peg": "peg_0",
+        "end_peg": "peg_1",
+        "difficulty": "medium",
+        "puzzle_id": 3
+      }
+    },
+    {
+      "initial_state": {
+        "pegs": {
+          "peg_0": [],
+          "peg_1": [
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_2": [],
+          "peg_3": []
+        },
+        "num_disks": 5
+      },
+      "goal_state": {
+        "pegs": {
+          "peg_0": [
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_1": [],
+          "peg_2": [],
+          "peg_3": []
+        },
+        "num_disks": 5
+      },
+      "metadata": {
+        "num_disks": 5,
+        "num_pegs": 4,
+        "start_peg": "peg_1",
+        "end_peg": "peg_0",
+        "difficulty": "medium",
+        "puzzle_id": 4
+      }
+    },
+    {
+      "initial_state": {
+        "pegs": {
+          "peg_0": [
+            2
+          ],
+          "peg_1": [
+            3
+          ],
+          "peg_2": [
+            4,
+            1
+          ]
+        },
+        "num_disks": 4
+      },
+      "goal_state": {
+        "pegs": {
+          "peg_0": [],
+          "peg_1": [
+            4,
+            3,
+            2,
+            1
+          ],
+          "peg_2": []
+        },
+        "num_disks": 4
+      },
+      "metadata": {
+        "num_disks": 4,
+        "num_pegs": 3,
+        "puzzle_type": "complex",
+        "end_peg": "peg_1",
+        "difficulty": "medium",
+        "puzzle_id": 5
+      }
+    }
+  ],
+  "results": {
+    "verbose": [
+      {
+        "success": true,
+        "moves": [
+          [
+            "peg_0",
+            "peg_2"
+          ],
+          [
+            "peg_0",
+            "peg_1"
+          ],
+          [
+            "peg_2",
+            "peg_1"
+          ],
+          [
+            "peg_0",
+            "peg_2"
+          ],
+          [
+            "peg_1",
+            "peg_0"
+          ],
+          [
+            "peg_1",
+            "peg_2"
+          ],
+          [
+            "peg_0",
+            "peg_2"
+          ]
+        ],
+        "response": "To solve this Tower of Hanoi puzzle, I need to move all disks from the source peg to the destination peg.\n\nmoves = [(\"peg_0\", \"peg_2\"), (\"peg_0\", \"peg_1\"), (\"peg_2\", \"peg_1\"), (\"peg_0\", \"peg_2\"), (\"peg_1\", \"peg_0\"), (\"peg_1\", \"peg_2\"), (\"peg_0\", \"peg_2\")]",
+        "token_usage": {
+          "prompt_tokens": 216,
+          "completion_tokens": 63,
+          "total_tokens": 279
+        },
+        "timing": {
+          "response_time": 5.0067901611328125e-06,
+          "execution_time": 0.00012373924255371094,
+          "total_time": 0.00014090538024902344
+        },
+        "result": 
