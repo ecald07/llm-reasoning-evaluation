@@ -173,6 +173,10 @@ solutions_*.json
 temp_*.py
 *.tmp
 
+# Evaluation results (auto-generated, should not be tracked)
+results/*.json
+results/evaluation_*.json
+
 # Puzzle output files (unless specifically needed)
 puzzles/
 output/ 
