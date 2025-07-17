@@ -165,17 +165,24 @@ class CodeExecutor:
             raise ExecutionError("Code contains potentially unsafe operations")
         
         # Prepare execution environment
+        # Handle __builtins__ whether it's a dict or module
+        if isinstance(__builtins__, dict):
+            builtins_source = __builtins__
+        else:
+            builtins_source = __builtins__.__dict__
+        
         exec_globals = {
-            '__builtins__': {name: getattr(__builtins__, name) 
+            '__builtins__': {name: builtins_source[name] 
                            for name in self.safe_builtins 
-                           if hasattr(__builtins__, name)}
+                           if name in builtins_source}
         }
         
         # Add puzzle input if provided
         if puzzle_input:
             exec_globals.update(puzzle_input)
         
-        exec_locals = {}
+        # Use the same namespace for globals and locals to handle recursive functions
+        exec_namespace = exec_globals.copy()
         
         # Capture output
         stdout_capture = io.StringIO()
@@ -194,7 +201,7 @@ class CodeExecutor:
             
             with timeout(self.timeout_seconds):
                 with redirect_stdout(stdout_capture), redirect_stderr(stderr_capture):
-                    exec(code, exec_globals, exec_locals)
+                    exec(code, exec_namespace, exec_namespace)
             
             result['execution_time'] = time.time() - start_time
             result['success'] = True
@@ -203,8 +210,8 @@ class CodeExecutor:
             # Try to extract moves from various possible variable names
             possible_move_vars = ['moves', 'solution', 'result', 'answer']
             for var_name in possible_move_vars:
-                if var_name in exec_locals:
-                    result['moves'] = exec_locals[var_name]
+                if var_name in exec_namespace:
+                    result['moves'] = exec_namespace[var_name]
                     break
         
         except TimeoutError as e:
